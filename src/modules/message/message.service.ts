@@ -466,6 +466,22 @@ export class MessageService {
     await engine.deleteMessage(dto.chatId, dto.messageId, dto.forEveryone ?? true);
   }
 
+  // ========== Presence & Typing ==========
+
+  async simulateTyping(sessionId: string, dto: { chatId: string; on: boolean }): Promise<void> {
+    const engine = this.getEngine(sessionId);
+    await engine.simulateTyping(dto.chatId, dto.on);
+  }
+
+  async sendPresence(sessionId: string, dto: { available: boolean }): Promise<void> {
+    const engine = this.getEngine(sessionId);
+    if (dto.available) {
+      await engine.sendPresenceAvailable();
+    } else {
+      await engine.sendPresenceUnavailable();
+    }
+  }
+
   private getEngine(sessionId: string) {
     const engine = this.sessionService.getEngine(sessionId);
     if (!engine) {

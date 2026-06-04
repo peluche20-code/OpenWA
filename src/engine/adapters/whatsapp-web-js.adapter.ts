@@ -915,6 +915,31 @@ export class WhatsAppWebJsAdapter extends EventEmitter implements IWhatsAppEngin
 
   /* eslint-enable @typescript-eslint/require-await, @typescript-eslint/no-unused-vars */
 
+  // ========== Presence & Typing ==========
+
+  async simulateTyping(chatId: string, state: boolean): Promise<void> {
+    this.ensureReady();
+    const chat = await this.client!.getChatById(chatId);
+    if (state) {
+      await chat.sendStateTyping();
+    } else {
+      await chat.clearState();
+    }
+    this.logger.log(`Typing state ${state ? 'ON' : 'OFF'} for chat ${chatId}`);
+  }
+
+  async sendPresenceAvailable(): Promise<void> {
+    this.ensureReady();
+    await this.client!.sendPresenceAvailable();
+    this.logger.log('Presence set to AVAILABLE');
+  }
+
+  async sendPresenceUnavailable(): Promise<void> {
+    this.ensureReady();
+    await this.client!.sendPresenceUnavailable();
+    this.logger.log('Presence set to UNAVAILABLE');
+  }
+
   private ensureReady(): void {
     if (this.status !== EngineStatus.READY || !this.client) {
       throw new Error('WhatsApp client is not ready');

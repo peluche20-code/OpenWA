@@ -341,18 +341,9 @@ export class MessageController {
   @ApiOperation({ summary: 'Cancel a running batch' })
   @ApiParam({ name: 'sessionId', description: 'Session ID' })
   @ApiParam({ name: 'batchId', description: 'Batch ID' })
-  @ApiResponse({
-    status: 200,
-    description: 'Batch cancelled',
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'Batch already completed or cancelled',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Batch not found',
-  })
+  @ApiResponse({ status: 200, description: 'Batch cancelled' })
+  @ApiResponse({ status: 400, description: 'Batch already completed or cancelled' })
+  @ApiResponse({ status: 404, description: 'Batch not found' })
   async cancelBatch(@Param('sessionId') sessionId: string, @Param('batchId') batchId: string) {
     const batch = await this.bulkMessageService.cancelBatch(sessionId, batchId);
     return {
@@ -360,5 +351,35 @@ export class MessageController {
       status: batch.status,
       progress: batch.progress,
     };
+  }
+
+  // ========== Presence & Typing ==========
+
+  @Post('simulate-typing')
+  @RequireRole(ApiKeyRole.OPERATOR)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Show or hide typing indicator in a chat' })
+  @ApiParam({ name: 'sessionId', description: 'Session ID' })
+  @ApiResponse({ status: 200, description: 'Typing state updated' })
+  async simulateTyping(
+    @Param('sessionId') sessionId: string,
+    @Body() dto: { chatId: string; on: boolean },
+  ): Promise<{ success: boolean }> {
+    await this.messageService.simulateTyping(sessionId, dto);
+    return { success: true };
+  }
+
+  @Post('send-presence')
+  @RequireRole(ApiKeyRole.OPERATOR)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Set presence as available (online) or unavailable (offline)' })
+  @ApiParam({ name: 'sessionId', description: 'Session ID' })
+  @ApiResponse({ status: 200, description: 'Presence updated' })
+  async sendPresence(
+    @Param('sessionId') sessionId: string,
+    @Body() dto: { available: boolean },
+  ): Promise<{ success: boolean }> {
+    await this.messageService.sendPresence(sessionId, dto);
+    return { success: true };
   }
 }
